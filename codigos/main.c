@@ -1,42 +1,28 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <signal.h>
-#include <unistd.h>
 #include <pthread.h>
 #include "patient.h"
 
-/* ------------------------------------------------------------------ */
-/*  Variáveis globais                                                   */
-/* ------------------------------------------------------------------ */
-Patient      patient;
+UTISystem    sys;
 volatile int server_running = 1;
 
-/* ------------------------------------------------------------------ */
-/*  Tratador de SIGINT (Ctrl+C)                                         */
-/* ------------------------------------------------------------------ */
 static void handle_sigint(int sig) {
     (void)sig;
     server_running = 0;
-    printf("\n[SERVER] Sinal de encerramento recebido...\n");
-
-    /* Acorda thread_history caso esteja em pthread_cond_wait */
-    pthread_cond_broadcast(&patient.cond_alarm);
+    printf("\n[SERVER] Encerrando...\n");
+    pthread_cond_broadcast(&sys.cond_alarm);
 }
 
-/* ------------------------------------------------------------------ */
-/*  main                                                                */
-/* ------------------------------------------------------------------ */
 int main(void) {
     signal(SIGINT, handle_sigint);
-
-    patient_init(&patient);
+    sys_init(&sys);
 
     printf("╔══════════════════════════════════════╗\n");
-    printf("║        Monitor de UTI Simulado       ║\n");
+    printf("║   Monitor de UTI Simulado — UFSM    ║\n");
     printf("╠══════════════════════════════════════╣\n");
     printf("║  Porta TCP  : %-5d                  ║\n", PORT);
-    printf("║  Threads    : 4 (vitals/alarm/       ║\n");
-    printf("║               history/network)       ║\n");
+    printf("║  Pacientes  : ate %-2d                 ║\n", MAX_PATIENTS);
     printf("║  Ctrl+C     : encerrar               ║\n");
     printf("╚══════════════════════════════════════╝\n\n");
 
@@ -47,17 +33,16 @@ int main(void) {
         pthread_create(&t_history, NULL, thread_history, NULL) != 0 ||
         pthread_create(&t_network, NULL, thread_network, NULL) != 0) {
         perror("pthread_create");
-        patient_destroy(&patient);
+        sys_destroy(&sys);
         return EXIT_FAILURE;
     }
 
-    /* Aguarda todas as threads finalizarem */
     pthread_join(t_vitals,  NULL);
     pthread_join(t_alarm,   NULL);
     pthread_join(t_history, NULL);
     pthread_join(t_network, NULL);
 
-    patient_destroy(&patient);
-    printf("[SERVER] Encerrado com sucesso.\n");
+    sys_destroy(&sys);
+    printf("[SERVER] Encerrado.\n");
     return EXIT_SUCCESS;
 }

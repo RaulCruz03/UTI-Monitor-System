@@ -10,7 +10,7 @@
 /* ------------------------------------------------------------------ */
 static float rand_vary(float current, float baseline, float amplitude) {
     float noise = ((float)rand() / RAND_MAX * 2.0f - 1.0f) * amplitude;
-    float pull  = (baseline - current) * 0.05f;  /* mean-reversion */
+    float pull  = (baseline - current) * 0.05f;  // mean-reversion 
     return current + noise + pull;
 }
 

@@ -1,0 +1,13 @@
+Como rodar o Monitor de UTI
+1. Abra dois terminais
+
+Terminal 1 — Servidor
+
+cd ~/Documentos/SOReal/UTI-Monitor-System-main/codigos
+make clean && make && ./uti_server
+
+Terminal 2 — Interface gráfica
+
+cd ~/Documentos/SOReal/UTI-Monitor-System-main/codigos
+python3 main.py
+

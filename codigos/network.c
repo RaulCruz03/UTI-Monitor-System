@@ -19,14 +19,14 @@ static void net_send(int sock, const char *msg) {
 /* ------------------------------------------------------------------ */
 static int patient_index(UTISystem *s, Patient *p) {
     if (!p) return -1;
-    return (int)(p - s->db);
+    return (int)(p - s->db);   // retorna o índice do paciente no array
 }
 
 /* ------------------------------------------------------------------ */
 /*  process_command                                                     */
 /* ------------------------------------------------------------------ */
 static void process_command(int sock, char *cmd) {
-    cmd[strcspn(cmd, "\r\n")] = '\0';
+    cmd[strcspn(cmd, "\r\n")] = '\0'; // trocando \r\n por \0 para facilitar comparação  windows e linux
     if (cmd[0] == '\0') return;
     printf("[network] CMD: %s\n", cmd);
 
@@ -34,9 +34,9 @@ static void process_command(int sock, char *cmd) {
 
     /* ── NEW_PATIENT <nome> ───────────────────────────────────────── */
     if (strncmp(cmd, "NEW_PATIENT", 11) == 0) {
-        const char *name = (strlen(cmd) > 12) ? cmd + 12 : "Sem Nome";
+        const char *name = (strlen(cmd) > 12) ? cmd + 12 : "Sem Nome"; //sserver suporta nome vazio, mas evita string vazia
         Patient *p = patient_new(&sys, name);
-        if (!p) { net_send(sock, "ERR: Limite de pacientes atingido\n"); goto done; }
+        if (!p) { net_send(sock, "ERR: Limite de pacientes atingido\n"); goto done; } // volta pro mutex unlock
         char buf[128];
         snprintf(buf, sizeof(buf), "OK: Paciente criado ID=%d nome=%s\n",
                  p->id, p->name);
